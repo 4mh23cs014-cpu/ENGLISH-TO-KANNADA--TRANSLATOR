@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English to Kannada Translator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1em;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-button:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-pair {
+            margin-bottom: 15px;
+        }
+
+        .result-pair:last-child {
+            margin-bottom: 0;
+        }
+
+        .label-small {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .text-english {
+            color: #333;
+            font-size: 1em;
+            margin-bottom: 8px;
+        }
+
+        .text-kannada {
+            color: #667eea;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .error {
+            color: #d32f2f;
+            padding: 15px;
+            background: #ffebee;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .success {
+            color: #388e3c;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .success.show {
+            display: block;
+        }
+
+        .search-results {
+            margin-top: 20px;
+        }
+
+        .search-results .result-item {
+            padding: 12px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-results .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .history-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .history-english {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .history-kannada {
+            color: #667eea;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .tabs {
+                gap: 5px;
+            }
+
+            .tab-button {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            button {
+                padding: 10px 16px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🇮🇳 Kannada Translator</h1>
+            <p>English to Kannada (ಕನ್ನಡ) Translation Tool</p>
+        </div>
+
+        <div class="content">
+            <div class="tabs">
+                <button class="tab-button active" data-tab="word">Word</button>
+                <button class="tab-button" data-tab="sentence">Sentence</button>
+                <button class="tab-button" data-tab="paragraph">Paragraph</button>
+                <button class="tab-button" data-tab="search">Search</button>
+                <button class="tab-button" data-tab="add">Add Word</button>
+                <button class="tab-button" data-tab="stats">Stats</button>
+                <button class="tab-button" data-tab="history">History</button>
+            </div>
+
+            <!-- Word Translation Tab -->
+            <div id="word" class="tab-content active">
+                <div class="form-group">
+                    <label for="word-input">Enter English Word:</label>
+                    <input type="text" id="word-input" placeholder="e.g., hello, water, good">
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="translateWord()">Translate</button>
+                    <button class="btn-secondary" onclick="clearWord()">Clear</button>
+                </div>
+                <div id="word-result" class="result">
+                    <div class="result-pair">
+                        <div class="label-small">English:</div>
+                        <div class="text-english" id="word-english"></div>
+                        <div class="label-small">Kannada:</div>
+                        <div class="text-kannada" id="word-kannada"></div>
+                    </div>
+                </div>
+                <div id="word-error" class="error"></div>
+            </div>
+
+            <!-- Sentence Translation Tab -->
+            <div id="sentence" class="tab-content">
+                <div class="form-group">
+                    <label for="sentence-input">Enter English Sentence:</label>
+                    <input type="text" id="sentence-input" placeholder="e.g., hello how are you">
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="translateSentence()">Translate</button>
+                    <button class="btn-secondary" onclick="clearSentence()">Clear</button>
+                </div>
+                <div id="sentence-result" class="result">
+                    <div class="result-pair">
+                        <div class="label-small">English:</div>
+                        <div class="text-english" id="sentence-english"></div>
+                        <div class="label-small">Kannada:</div>
+                        <div class="text-kannada" id="sentence-kannada"></div>
+                    </div>
+                </div>
+                <div id="sentence-error" class="error"></div>
+            </div>
+
+            <!-- Paragraph Translation Tab -->
+            <div id="paragraph" class="tab-content">
+                <div class="form-group">
+                    <label for="paragraph-input">Enter English Paragraph:</label>
+                    <textarea id="paragraph-input" placeholder="Enter your paragraph here..."></textarea>
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="translateParagraph()">Translate</button>
+                    <button class="btn-secondary" onclick="clearParagraph()">Clear</button>
+                </div>
+                <div id="paragraph-result" class="result">
+                    <div class="result-pair">
+                        <div class="label-small">Kannada Translation:</div>
+                        <div class="text-kannada" id="paragraph-kannada"></div>
+                    </div>
+                </div>
+                <div id="paragraph-error" class="error"></div>
+            </div>
+
+            <!-- Search Tab -->
+            <div id="search" class="tab-content">
+                <div class="form-group">
+                    <label for="search-input">Search Dictionary:</label>
+                    <input type="text" id="search-input" placeholder="e.g., good, water, hello">
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="searchDictionary()">Search</button>
+                    <button class="btn-secondary" onclick="clearSearch()">Clear</button>
+                </div>
+                <div id="search-result" class="result">
+                    <div class="search-results" id="search-results-container"></div>
+                </div>
+                <div id="search-error" class="error"></div>
+            </div>
+
+            <!-- Add Word Tab -->
+            <div id="add" class="tab-content">
+                <div class="form-group">
+                    <label for="add-english">English Word:</label>
+                    <input type="text" id="add-english" placeholder="e.g., python">
+                </div>
+                <div class="form-group">
+                    <label for="add-kannada">Kannada Translation:</label>
+                    <input type="text" id="add-kannada" placeholder="e.g., ಪೈಥಾನ್">
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="addWord()">Add Word</button>
+                    <button class="btn-secondary" onclick="clearAddWord()">Clear</button>
+                </div>
+                <div id="add-result" class="success"></div>
+                <div id="add-error" class="error"></div>
+            </div>
+
+            <!-- Statistics Tab -->
+            <div id="stats" class="tab-content">
+                <div class="button-group">
+                    <button class="btn-primary" onclick="loadStats()">Load Statistics</button>
+                </div>
+                <div id="stats-result" class="result">
+                    <div id="stats-container"></div>
+                </div>
+                <div id="stats-error" class="error"></div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="history" class="tab-content">
+                <div class="button-group">
+                    <button class="btn-primary" onclick="loadHistory()">Load History</button>
+                    <button class="btn-secondary" onclick="clearHistoryBtn()">Clear History</button>
+                </div>
+                <div id="history-result" class="result">
+                    <div id="history-container"></div>
+                </div>
+                <div id="history-error" class="error"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+                switchTab(tabName);
+            });
+        });
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        }
+
+        // Helper functions
+        function showLoading(element) {
+            element.innerHTML = '<div class="loading"></div> Processing...';
+        }
+
+        function showError(elementId, message) {
+            const error = document.getElementById(elementId);
+            error.textContent = message;
+            error.classList.add('show');
+        }
+
+        function hideError(elementId) {
+            const error = document.getElementById(elementId);
+            error.classList.remove('show');
+        }
+
+        function showSuccess(elementId, message) {
+            const success = document.getElementById(elementId);
+            success.textContent = message;
+            success.classList.add('show');
+        }
+
+        function hideSuccess(elementId) {
+            const success = document.getElementById(elementId);
+            success.classList.remove('show');
+        }
+
+        // Word Translation
+        function translateWord() {
+            const word = document.getElementById('word-input').value.trim();
+            if (!word) {
+                showError('word-error', 'Please enter a word');
+                return;
+            }
+
+            hideError('word-error');
+            fetch('/api/translate-word', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ word: word })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.found) {
+                    document.getElementById('word-english').textContent = data.english;
+                    document.getElementById('word-kannada').textContent = data.kannada;
+                    document.getElementById('word-result').classList.add('show');
+                } else {
+                    showError('word-error', data.message);
+                }
+            })
+            .catch(e => showError('word-error', 'Error: ' + e.message));
+        }
+
+        function clearWord() {
+            document.getElementById('word-input').value = '';
+            document.getElementById('word-result').classList.remove('show');
+            hideError('word-error');
+        }
+
+        // Sentence Translation
+        function translateSentence() {
+            const sentence = document.getElementById('sentence-input').value.trim();
+            if (!sentence) {
+                showError('sentence-error', 'Please enter a sentence');
+                return;
+            }
+
+            hideError('sentence-error');
+            fetch('/api/translate-sentence', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sentence: sentence })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('sentence-english').textContent = data.english;
+                document.getElementById('sentence-kannada').textContent = data.kannada;
+                document.getElementById('sentence-result').classList.add('show');
+            })
+            .catch(e => showError('sentence-error', 'Error: ' + e.message));
+        }
+
+        function clearSentence() {
+            document.getElementById('sentence-input').value = '';
+            document.getElementById('sentence-result').classList.remove('show');
+            hideError('sentence-error');
+        }
+
+        // Paragraph Translation
+        function translateParagraph() {
+            const paragraph = document.getElementById('paragraph-input').value.trim();
+            if (!paragraph) {
+                showError('paragraph-error', 'Please enter a paragraph');
+                return;
+            }
+
+            hideError('paragraph-error');
+            fetch('/api/translate-paragraph', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paragraph: paragraph })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('paragraph-kannada').textContent = data.kannada;
+                document.getElementById('paragraph-result').classList.add('show');
+            })
+            .catch(e => showError('paragraph-error', 'Error: ' + e.message));
+        }
+
+        function clearParagraph() {
+            document.getElementById('paragraph-input').value = '';
+            document.getElementById('paragraph-result').classList.remove('show');
+            hideError('paragraph-error');
+        }
+
+        // Search
+        function searchDictionary() {
+            const term = document.getElementById('search-input').value.trim();
+            if (!term) {
+                showError('search-error', 'Please enter a search term');
+                return;
+            }
+
+            hideError('search-error');
+            fetch('/api/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ term: term })
+            })
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('search-results-container');
+                if (data.count > 0) {
+                    let html = `<p style="margin-bottom: 15px; color: #666;">Found ${data.count} match(es):</p>`;
+                    Object.entries(data.results).forEach(([eng, kan]) => {
+                        html += `<div class="result-item"><span>${eng}</span><span style="color: #667eea; font-weight: 600;">${kan}</span></div>`;
+                    });
+                    container.innerHTML = html;
+                    document.getElementById('search-result').classList.add('show');
+                } else {
+                    showError('search-error', 'No matches found');
+                }
+            })
+            .catch(e => showError('search-error', 'Error: ' + e.message));
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-result').classList.remove('show');
+            hideError('search-error');
+        }
+
+        // Add Word
+        function addWord() {
+            const english = document.getElementById('add-english').value.trim();
+            const kannada = document.getElementById('add-kannada').value.trim();
+            
+            if (!english || !kannada) {
+                showError('add-error', 'Please fill in both fields');
+                return;
+            }
+
+            hideError('add-error');
+            fetch('/api/add-word', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ english: english, kannada: kannada })
+            })
+            .then(r => r.json())
+            .then(data => {
+                showSuccess('add-result', `Added: ${english} → ${kannada}`);
+                document.getElementById('add-english').value = '';
+                document.getElementById('add-kannada').value = '';
+                setTimeout(() => hideSuccess('add-result'), 3000);
+            })
+            .catch(e => showError('add-error', 'Error: ' + e.message));
+        }
+
+        function clearAddWord() {
+            document.getElementById('add-english').value = '';
+            document.getElementById('add-kannada').value = '';
+            hideError('add-error');
+            hideSuccess('add-result');
+        }
+
+        // Statistics
+        function loadStats() {
+            fetch('/api/stats')
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('stats-container');
+                container.innerHTML = `
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">${data.total_translations}</div>
+                            <div class="stat-label">Total Translations</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.dictionary_size}</div>
+                            <div class="stat-label">Dictionary Words</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.total_unknown_words}</div>
+                            <div class="stat-label">Unknown Words</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.success_rate.toFixed(1)}%</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('stats-result').classList.add('show');
+            })
+            .catch(e => showError('stats-error', 'Error: ' + e.message));
+        }
+
+        // History
+        function loadHistory() {
+            fetch('/api/history')
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('history-container');
+                if (data.count > 0) {
+                    let html = '';
+                    data.history.forEach((item, idx) => {
+                        html += `
+                            <div class="history-item">
+                                <div><strong>#${idx + 1}</strong></div>
+                                <div class="history-english"><strong>English:</strong> ${item.english}</div>
+                                <div class="history-kannada"><strong>Kannada:</strong> ${item.kannada}</div>
+                        `;
+                        if (item.unknown_words && item.unknown_words.length > 0) {
+                            html += `<div style="color: #ff9800; margin-top: 8px; font-size: 0.9em;"><strong>Unknown:</strong> ${item.unknown_words.join(', ')}</div>`;
+                        }
+                        html += '</div>';
+                    });
+                    container.innerHTML = html;
+                    document.getElementById('history-result').classList.add('show');
+                } else {
+                    showError('history-error', 'No translation history');
+                }
+            })
+            .catch(e => showError('history-error', 'Error: ' + e.message));
+        }
+
+        function clearHistoryBtn() {
+            if (confirm('Are you sure you want to clear history?')) {
+                fetch('/api/clear-history', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('history-result').classList.remove('show');
+                    document.getElementById('history-container').innerHTML = '';
+                    showSuccess('history-error', 'History cleared');
+                    setTimeout(() => hideSuccess('history-error'), 3000);
+                })
+                .catch(e => showError('history-error', 'Error: ' + e.message));
+            }
+        }
+
+        // Load stats on tab switch
+        const statsBtn = document.querySelector('[data-tab="stats"]');
+        if (statsBtn) {
+            statsBtn.addEventListener('click', loadStats);
+        }
+
+        const historyBtn = document.querySelector('[data-tab="history"]');
+        if (historyBtn) {
+            historyBtn.addEventListener('click', loadHistory);
+        }
+    </script>
+</body>
+</html>
